@@ -10,17 +10,17 @@ import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/gov/dashboard")({
   head: () => ({ meta: [{ title: "Government Dashboard — InnovaSetu" }] }),
-  component: GovDashboard,
+  component: GovWorkspace, // ✅ Changed to GovWorkspace
 });
 
-// ✅ ADDED 'export' HERE so Vercel can build it properly
-export function GovDashboard() {
+// ✅ Renamed from GovDashboard to GovWorkspace so other files can import it
+export function GovWorkspace() {
   const [activeTab, setActiveTab] = useState("emergency");
-  const [challenges, setChallenges] = useState([]);
-  const [proposals, setProposals] = useState([]);
-  const [bids, setBids] = useState([]);
-  const [projects, setProjects] = useState([]);
-  const [history, setHistory] = useState([]);
+  const [challenges, setChallenges] = useState<any[]>([]);
+  const [proposals, setProposals] = useState<any[]>([]);
+  const [bids, setBids] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
