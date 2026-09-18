@@ -13,7 +13,8 @@ export const Route = createFileRoute("/gov/dashboard")({
   component: GovDashboard,
 });
 
-function GovDashboard() {
+// ✅ ADDED 'export' HERE so Vercel can build it properly
+export function GovDashboard() {
   const [activeTab, setActiveTab] = useState("emergency");
   const [challenges, setChallenges] = useState([]);
   const [proposals, setProposals] = useState([]);
@@ -21,7 +22,7 @@ function GovDashboard() {
   const [projects, setProjects] = useState([]);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -46,31 +47,31 @@ function GovDashboard() {
         if (err3) throw err3;
         if (err4) throw err4;
 
-        const profilesById = new Map((profileData || []).map((p) => [String(p.id), p]));
-        const challengeMap = new Map((challengeData || []).map((c) => [String(c.id), c]));
+        const profilesById = new Map((profileData || []).map((p: any) => [String(p.id), p]));
+        const challengeMap = new Map((challengeData || []).map((c: any) => [String(c.id), c]));
 
         // 1. Emergency Challenges
-        const emergencyList = (challengeData || []).filter((c) => {
+        const emergencyList = (challengeData || []).filter((c: any) => {
           const status = String(c.status || "").toLowerCase();
           return ["government_review", "submitted", "ai_reviewed", "pending_review"].includes(status) && Boolean(c.is_emergency);
         });
         setChallenges(emergencyList);
 
         // 2. University Proposals
-        const proposalsList = (solutionData || []).filter((s) => {
+        const proposalsList = (solutionData || []).filter((s: any) => {
           const cStatus = String(s.challenge?.status || "").toLowerCase();
           return ["open_for_university_solutions", "proposal_received"].includes(cStatus) && String(s.status).toLowerCase() === "submitted";
-        }).map((s) => ({
+        }).map((s: any) => ({
           ...s,
           university_name: s.university?.organization_name || profilesById.get(String(s.university_id))?.organization_name || "University not found"
         }));
         setProposals(proposalsList);
 
         // 3. Industry Bids
-        const activeBids = (bidData || []).filter((b) => {
+        const activeBids = (bidData || []).filter((b: any) => {
           const c = challengeMap.get(String(b.challenge_id));
           return String(b.status).toLowerCase() === "submitted" && String(c?.status || "").toLowerCase() === "industry_bidding";
-        }).map((b) => ({
+        }).map((b: any) => ({
           ...b,
           challenge: challengeMap.get(String(b.challenge_id)),
           industry_name: profilesById.get(String(b.industry_id))?.organization_name || "Industry not found"
@@ -78,28 +79,28 @@ function GovDashboard() {
         setBids(activeBids);
 
         // 4. Projects to Verify
-        const verificationProjects = (bidData || []).filter((b) => {
+        const verificationProjects = (bidData || []).filter((b: any) => {
           const c = challengeMap.get(String(b.challenge_id));
           return ["funded", "submitted_for_verification"].includes(String(b.status).toLowerCase()) && String(c?.status || "").toLowerCase() !== "solved";
-        }).map((b) => ({
+        }).map((b: any) => ({
           ...b,
           challenge: challengeMap.get(String(b.challenge_id)),
           industry_name: profilesById.get(String(b.industry_id))?.organization_name || "Industry not found"
         }));
         setProjects(verificationProjects);
 
-        // 5. Project History (ALL completed/rejected projects)
-        const historyList = (bidData || []).filter((b) => {
+        // 5. Project History
+        const historyList = (bidData || []).filter((b: any) => {
           const status = String(b.status || "").toLowerCase();
           return ["completed", "rejected", "revision_required"].includes(status);
-        }).map((b) => ({
+        }).map((b: any) => ({
           ...b,
           challenge: challengeMap.get(String(b.challenge_id)),
           industry_name: profilesById.get(String(b.industry_id))?.organization_name || "Industry not found"
         }));
         setHistory(historyList);
 
-      } catch (err) {
+      } catch (err: any) {
         console.error("Dashboard Load Error:", err);
         setError(err.message);
       } finally {
@@ -109,7 +110,7 @@ function GovDashboard() {
     loadData();
   }, []);
 
-  const selectSolution = async (solution) => {
+  const selectSolution = async (solution: any) => {
     try {
       await supabase.from("university_solutions").update({ status: "government_approved" }).eq("id", solution.id);
       await supabase.from("challenges").update({ status: "industry_bidding" }).eq("id", solution.challenge_id);
@@ -120,7 +121,7 @@ function GovDashboard() {
     }
   };
 
-  const selectBid = async (bid) => {
+  const selectBid = async (bid: any) => {
     const challengeId = String(bid.challenge_id);
     const selectedBidId = String(bid.id);
 
@@ -143,21 +144,21 @@ function GovDashboard() {
     { id: "history", label: "Project History", icon: History, count: history.length },
   ];
 
-  const displayValue = (value, fallback = "Not provided") => {
+  const displayValue = (value: any, fallback = "Not provided") => {
     if (value === null || value === undefined || value === "") return fallback;
     if (typeof value === "number") return `₹${value.toLocaleString("en-IN")}`;
     if (typeof value === "string" && value.trim()) return value;
     return fallback;
   };
 
-  const locationValue = (challenge) => {
+  const locationValue = (challenge: any) => {
     if (challenge.district || challenge.block_ward) {
       return [challenge.district, challenge.block_ward].filter(Boolean).join(", ");
     }
     return displayValue(challenge.location);
   };
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (status: string) => {
     const s = status.toLowerCase();
     if (s === "completed") return { text: "Solved", color: "bg-green-100 text-green-700" };
     if (s === "rejected") return { text: "Rejected", color: "bg-red-100 text-red-700" };
@@ -216,7 +217,7 @@ function GovDashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {challenges.map((c) => (
+                  {challenges.map((c: any) => (
                     <TableRow key={c.id}>
                       <TableCell className="font-medium">{c.title}</TableCell>
                       <TableCell>{locationValue(c)}</TableCell>
@@ -243,7 +244,7 @@ function GovDashboard() {
               <EmptyState title="No proposals" description="Wait for universities to submit solutions." />
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
-                {proposals.map((sol) => (
+                {proposals.map((sol: any) => (
                   <div key={sol.id} className="border rounded-lg p-4 bg-background">
                     <h3 className="font-bold">{sol.challenge?.title}</h3>
                     <p className="text-sm text-muted-foreground mb-2">By: {sol.university_name}</p>
@@ -265,7 +266,7 @@ function GovDashboard() {
               <EmptyState title="No bids" description="Wait for industries to bid on selected solutions." />
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
-                {bids.map((bid) => (
+                {bids.map((bid: any) => (
                   <div key={bid.id} className="border rounded-lg p-4 bg-background">
                     <h3 className="font-bold">{bid.challenge?.title}</h3>
                     <p className="text-sm text-muted-foreground">Industry: {bid.industry_name}</p>
@@ -288,7 +289,7 @@ function GovDashboard() {
               <EmptyState title="No projects" description="Projects will appear here after industry submits work." />
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
-                {projects.map((proj) => (
+                {projects.map((proj: any) => (
                   <div key={proj.id} className="border rounded-lg p-4 bg-background">
                     <h3 className="font-bold">{proj.challenge?.title}</h3>
                     <p className="text-sm text-muted-foreground">Industry: {proj.industry_name}</p>
@@ -327,7 +328,7 @@ function GovDashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {history.map((item) => {
+                  {history.map((item: any) => {
                     const badge = getStatusBadge(item.status);
                     return (
                       <TableRow key={item.id}>
