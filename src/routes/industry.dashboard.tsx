@@ -22,7 +22,8 @@ function IndustryDashboardRoute() {
   );
 }
 
-function IndustryWorkspace({ view }) {
+// ✅ ADDED 'export' HERE so other files can import it
+export function IndustryWorkspace({ view }) {
   const [proposals, setProposals] = useState([]);
   const [bids, setBids] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,8 +44,6 @@ function IndustryWorkspace({ view }) {
           .select("full_name, organization_name, role")
           .eq("id", userId)
           .maybeSingle();
-        
-        console.log("Profile data:", profile, "Error:", profileError);
         
         if (!active) return;
         
