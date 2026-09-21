@@ -22,13 +22,11 @@ function CitizenDashboard() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // 1. Check local session for name
         const session = getSession();
         if (session && session.role === "citizen") {
           setUserName(session.name);
         }
         
-        // 2. Fetch actual reports from Supabase
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const { data, error } = await supabase
@@ -65,13 +63,12 @@ function CitizenDashboard() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card sticky top-0 z-10">
+      <header className="border-b border-border bg-card">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
             <span className="text-xl font-bold text-primary">InnovaSetu</span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground hidden sm:inline">Welcome, <strong>{userName}</strong></span>
             <Button 
               variant="destructive" 
               size="sm"
@@ -88,17 +85,26 @@ function CitizenDashboard() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold mb-1">My Reports</h1>
-            <p className="text-muted-foreground">Track your reported problems and their status</p>
-          </div>
+        {/* ✅ CENTERED WELCOME MESSAGE */}
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold mb-2">Welcome, {userName}</h1>
+          <p className="text-muted-foreground text-lg">Your workspace for civic problem solving.</p>
+        </div>
+
+        {/* ✅ SINGLE REPORT BUTTON - CENTERED */}
+        <div className="mb-8 text-center">
           <Link to="/citizen/submit">
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto">
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
               <FilePlus2 className="mr-2 h-4 w-4" />
               Report a New Problem
             </Button>
           </Link>
+        </div>
+
+        {/* Section Title */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold">My Reports</h2>
+          <p className="text-muted-foreground">Track your reported problems and their status</p>
         </div>
 
         {/* Reports List or Empty State */}
@@ -112,7 +118,7 @@ function CitizenDashboard() {
               Start by reporting a problem in your area
             </p>
             <Link to="/citizen/submit">
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
                 <FilePlus2 className="mr-2 h-4 w-4" />
                 Report a Problem
               </Button>
@@ -121,7 +127,6 @@ function CitizenDashboard() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {reports.map((report) => {
-              // Determine badge color based on status
               const statusLower = (report.status || "pending").toLowerCase();
               let badgeClass = "bg-blue-100 text-blue-700";
               if (statusLower.includes("solved") || statusLower.includes("completed")) badgeClass = "bg-green-100 text-green-700";
